@@ -2,9 +2,9 @@ from django.shortcuts import get_object_or_404
 from django.http import HttpResponse
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
-from product.models import Product,Category,Review
+from product.models import Product,Category,Review,ProductImage
 from rest_framework import status
-from product.serializers import ProductSerializer,CategorySerializer,ReviewSerializer
+from product.serializers import ProductSerializer,CategorySerializer,ReviewSerializer,ProductImageSerializer
 from django.db.models import Count
 from rest_framework.views import APIView
 from rest_framework.generics import ListCreateAPIView,RetrieveUpdateDestroyAPIView
@@ -19,7 +19,132 @@ from api.permissions import IsAdminOrReadOnly,FullDjangoModelPermission
 from rest_framework.permissions import DjangoModelPermissions
 from rest_framework.permissions import DjangoModelPermissionsOrAnonReadOnly
 from product.permissions import IsReviewAuthorOrReadonly
+from drf_yasg.utils import swagger_auto_schema
 # Create your views here.
+
+
+#Viewset use Router
+# (ViewProduct+ProductDetails)
+class productViewSet(ModelViewSet):
+    queryset = Product.objects.all()
+    serializer_class = ProductSerializer
+    filter_backends = [DjangoFilterBackend,SearchFilter,OrderingFilter]
+    # filterset_fields = ['category_id','price']
+    filterset_class = ProductFilter
+    pagination_class = DefaultPagination
+    search_fields = ['name','description','category__name']
+    ordering_fields = ['price','updated_at']
+    permission_classes=[IsAdminOrReadOnly]
+    @swagger_auto_schema(
+        operation_summary='Retrive a list of products'
+    )
+    def list(self, request, *args, **kwargs):
+        """Retrive all the products"""
+        return super().list(request, *args, **kwargs)
+
+    @swagger_auto_schema(
+        operation_summary="Create a product by admin",
+        operation_description="This allow an admin to create a product",
+        request_body=ProductSerializer,
+        responses={
+            201: ProductSerializer,
+            400: "Bad Request"
+        }
+    )
+    def create(self, request, *args, **kwargs):
+        """Only authenticated admin can create product"""
+        return super().create(request, *args, **kwargs)
+
+
+class ProductImageViewSet(ModelViewSet):
+    serializer_class = ProductImageSerializer
+    permission_classes=[IsAdminOrReadOnly]
+
+    def get_queryset(self):
+        return ProductImage.objects.filter(product_id=self.kwargs.get('product_pk'))
+    def perform_create(self,serializer):
+        # serializer.save(product_id = self.kwargs['product_pk'])# give error in Swagger
+        serializer.save(product_id = self.kwargs.get('product_pk'))
+
+   
+
+
+# CategoryList + CategoryDEtails
+class CategoryViewSet(ModelViewSet):
+    permission_classes=[IsAdminOrReadOnly]
+    queryset = Category.objects.annotate(
+        product_count=Count('products')).all()
+    serializer_class = CategorySerializer
+
+
+#Generic Api View
+class CategoryDetails(RetrieveUpdateDestroyAPIView):
+    queryset = Category.objects.annotate(product_count=Count('products')).all()
+    serializer_class  = CategorySerializer
+
+
+
+
+class ReviewViewset(ModelViewSet):
+    serializer_class = ReviewSerializer
+    permission_classes=[IsReviewAuthorOrReadonly]
+    def perform_create(self, serializer):
+        return serializer.save(user=self.request.user)
+    def get_queryset(self):
+        return Review.objects.filter(product_id=self.kwargs.get('product_pk'))
+    def perform_update(self, serializer):
+        serializer.save(user=self.request.user)
+    def get_serializer_context(self):
+        return {'product_id': self.kwargs.get('product_pk')}
+
+
+
+
+
+
+# #Viewset use Router
+# # (ViewProduct+ProductDetails)
+# class productViewSet(ModelViewSet):
+#     queryset = Product.objects.all()
+#     serializer_class = ProductSerializer
+#     filter_backends = [DjangoFilterBackend,SearchFilter,OrderingFilter]
+#     # filterset_fields = ['category_id','price']
+#     filterset_class = ProductFilter
+#     pagination_class = DefaultPagination
+#     search_fields = ['name','description','category__name']
+#     ordering_fields = ['price','updated_at']
+#     permission_classes=[IsAdminOrReadOnly]
+#     # permission_classes = [DjangoModelPermissions]
+#     # permission_classes = [FullDjangoModelPermission]#Roled-Based-Control
+#     # def get_permissions(self): #is an instance method
+#     #     if self.request.method == 'GET':
+#     #         # return [AllowAny]#return class (wrong)
+#     #         return [AllowAny()] #return class obj
+#     #     return [IsAdminUser()]
+
+#     # def get_queryset(self):
+#     #     queryset = Product.objects.all()
+#     #     category_id = self.request.query_params.get('category_id')
+#     #     if category_id is not None:
+#     #         queryset = Product.objects.filter(category_id=category_id)
+#     #     return queryset
+       
+#     #override from  mixins.DestroyModelMixin class
+#     # def destroy(self,request,*args,**kwargs):
+#     #     product = self.get_object()
+#     #     if product.stock>10:
+#     #         return Response({'message':'Product with stock more than 10 could not be deleted'})
+#     #     self.perform_destroy(product)
+#     #     return Response( status=status.HTTP_204_NO_CONTENT)   
+
+
+
+
+
+
+
+
+
 
 # @api_view(['GET','POST'])
 # def view_products(request):
@@ -53,43 +178,6 @@ from product.permissions import IsReviewAuthorOrReadonly
 #         serializer.save()
 #         return Response(serializer.data, status=status.HTTP_201_CREATED)
     
-
-#Viewset use Router
-# (ViewProduct+ProductDetails)
-class productViewSet(ModelViewSet):
-    queryset = Product.objects.all()
-    serializer_class = ProductSerializer
-    filter_backends = [DjangoFilterBackend,SearchFilter,OrderingFilter]
-    # filterset_fields = ['category_id','price']
-    filterset_class = ProductFilter
-    pagination_class = DefaultPagination
-    search_fields = ['name','description','category__name']
-    ordering_fields = ['price','updated_at']
-    permission_classes=[IsAdminOrReadOnly]
-    # permission_classes = [DjangoModelPermissions]
-    # permission_classes = [FullDjangoModelPermission]#Roled-Based-Control
-    # def get_permissions(self): #is an instance method
-    #     if self.request.method == 'GET':
-    #         # return [AllowAny]#return class (wrong)
-    #         return [AllowAny()] #return class obj
-    #     return [IsAdminUser()]
-
-    # def get_queryset(self):
-    #     queryset = Product.objects.all()
-    #     category_id = self.request.query_params.get('category_id')
-    #     if category_id is not None:
-    #         queryset = Product.objects.filter(category_id=category_id)
-    #     return queryset
-       
-    #override from  mixins.DestroyModelMixin class
-    def destroy(self,request,*args,**kwargs):
-        product = self.get_object()
-        if product.stock>10:
-            return Response({'message':'Product with stock more than 10 could not be deleted'})
-        self.perform_destroy(product)
-        return Response( status=status.HTTP_204_NO_CONTENT)   
-
-
 
 # class ProductList(ListCreateAPIView):
 #     # queryset = Product.objects.select_related('category').all()
@@ -189,13 +277,6 @@ class productViewSet(ModelViewSet):
 #         return Response(serializers.data, status=status.HTTP_201_CREATED)
 
 
-# CategoryList + CategoryDEtails
-class CategoryViewSet(ModelViewSet):
-    permission_classes=[IsAdminOrReadOnly]
-    queryset = Category.objects.annotate(
-        product_count=Count('products')).all()
-    serializer_class = CategorySerializer
-
 
 
 
@@ -236,26 +317,5 @@ class CategoryViewSet(ModelViewSet):
 #         category.delete()
 #         serializer = CategorySerializer(copy_of_product)
 #         return Response(serializer.data, status=status.HTTP_204_NO_CONTENT)      
-
-#Generic Api View
-class CategoryDetails(RetrieveUpdateDestroyAPIView):
-    queryset = Category.objects.annotate(product_count=Count('products')).all()
-    serializer_class  = CategorySerializer
-
-
-
-
-class ReviewViewset(ModelViewSet):
-    serializer_class = ReviewSerializer
-    permission_classes=[IsReviewAuthorOrReadonly]
-    def perform_create(self, serializer):
-        return serializer.save(user=self.request.user)
-    def get_queryset(self):
-        return Review.objects.filter(product_id=self.kwargs['product_pk'])
-    def perform_update(self, serializer):
-        serializer.save(user=self.request.user)
-    def get_serializer_context(self):
-        return {'product_id': self.kwargs['product_pk']}
-
 
 

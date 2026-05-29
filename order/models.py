@@ -16,6 +16,8 @@ class Cart(models.Model):
         return f"Cart of {self.user.first_name}"
 
 
+#here cart is on foreign key so,
+#cart_id for pk and cart__user for non-foreign key
 class CartItem(models.Model):
     cart = models.ForeignKey(
         Cart, on_delete=models.CASCADE, related_name="items")

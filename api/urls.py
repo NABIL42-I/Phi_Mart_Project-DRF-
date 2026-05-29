@@ -1,6 +1,6 @@
 from django.urls import path,include
 # from rest_framework.routers import SimpleRouter,DefaultRouter
-from product.views import productViewSet,CategoryViewSet,ReviewViewset
+from product.views import productViewSet,CategoryViewSet,ReviewViewset,ProductImageViewSet
 from rest_framework_nested import routers
 from order.views import CartViewSet,CartItemViewSet,Orderviewset
 
@@ -12,8 +12,9 @@ router.register('carts',CartViewSet, basename = 'carts')
 router.register('orders',Orderviewset, basename = 'orders')
 
 product_router = routers.NestedSimpleRouter(router, 'products', lookup='product')
-product_router.register('reviews',ReviewViewset, basename='Product-Review')# basename -> label name
+product_router.register('reviews',ReviewViewset, basename='product-Review')# basename -> label name
 
+product_router.register('images',ProductImageViewSet,basename='product-image')
 # 'basename' is optional. Needed only if the same viewset is registered more than once
 # Official DRF docs on this option: http://www.django-rest-framework.org/api-guide/routers/
 

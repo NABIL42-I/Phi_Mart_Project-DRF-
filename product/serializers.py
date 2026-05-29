@@ -1,13 +1,13 @@
 from rest_framework import serializers
 from decimal import Decimal
-from product.models import Product, Category,Review
+from product.models import Product, Category,Review,ProductImage
 from django.conf import settings
 from django.contrib.auth import get_user_model
 
 
 
 class CategorySerializer(serializers.ModelSerializer):
-    product_count = serializers.IntegerField(read_only = True)
+    product_count = serializers.IntegerField(read_only = True,help_text="Return the number product in this category")
 
     class Meta:
         model = Category
@@ -16,15 +16,17 @@ class CategorySerializer(serializers.ModelSerializer):
     # def get_product_count(self, obj):
     #     return obj.products.count()
 
-
-
-
+class ProductImageSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ProductImage
+        fields = ['id','image']
 
 class ProductSerializer(serializers.ModelSerializer):
+    images = ProductImageSerializer(many=True,read_only=True)
     class Meta:
         model = Product
         fields = ['id', 'name', 'description', 'price',
-                  'stock', 'category', 'price_with_tax']  # other
+                  'stock', 'category', 'price_with_tax','images']  # other
         
     # category= serializers.HyperlinkedRelatedField(
     #     queryset = Category.objects.all(),
@@ -41,6 +43,9 @@ class ProductSerializer(serializers.ModelSerializer):
         if price < 0:
             raise serializers.ValidationError('Price could not be negative')
         return price
+
+
+
 
 class SimpleUserSerializer(serializers.ModelSerializer):
     name = serializers.SerializerMethodField(
@@ -68,6 +73,7 @@ class ReviewSerializer(serializers.ModelSerializer):
         return Review.objects.create(product_id=product_id, **validated_data)
     def get_user(self, obj):
         return SimpleUserSerializer(obj.user).data
+
 
 
 
