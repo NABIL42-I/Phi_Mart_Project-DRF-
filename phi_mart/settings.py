@@ -26,8 +26,17 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = 'django-insecure-=*j_s_at%14_8as=4$kbj5!1#b1))b5)enmmi&k2ik4n%1d$i='
 
+
+
+
+
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = False
+
+
+
+
+
 
 ALLOWED_HOSTS = ['.vercel.app','127.0.0.1']
 
@@ -146,7 +155,7 @@ cloudinary.config(
     cloud_name = config('cloud_name'), 
     api_key = config('cloudinary_api_key'), 
     api_secret = config('api_secret'),
-    secure = True
+    # secure = True
 )
 #Media Storage setting
 DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
@@ -182,6 +191,9 @@ SIMPLE_JWT = {
 
 
 DJOSER = {
+    'PASSWORD_RESET_CONFIRM_URL': '#/password/reset/confirm/{uid}/{token}',
+    'ACTIVATION_URL': 'activate/{uid}/{token}',
+    'SEND_ACTIVATION_EMAIL': True,
     'SERIALIZERS': {
         'user_create' : 'users.serializers.UserCreateSerializer',
         'current_user': 'users.serializers.UserSerializer'
@@ -199,3 +211,12 @@ SWAGGER_SETTINGS = {
       }
    }
 }
+
+
+
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = config('EMAIL_HOST')
+EMAIL_USE_TLS = config('EMAIL_USE_TLS', cast=bool)
+EMAIL_PORT = config('EMAIL_PORT')
+EMAIL_HOST_USER = config('EMAIL_HOST_USER')
+EMAIL_HOST_PASSWORD = config('EMAIL_HOST_PASSWORD')
