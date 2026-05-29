@@ -1,6 +1,4 @@
 __pycache__
-db.sqlite3
-token.json
 phi_env/
 .env
 # phi_mart/settings.py
