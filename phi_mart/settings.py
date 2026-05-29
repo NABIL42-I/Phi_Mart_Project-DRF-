@@ -92,8 +92,7 @@ TEMPLATES = [
     },
 ]
 
-WSGI_APPLICATION = 'phi_mart.wsgi.app'
-
+WSGI_APPLICATION = 'phi_mart.wsgi.application'
 INTERNAL_IPS = [
     # ...
     "127.0.0.1",
