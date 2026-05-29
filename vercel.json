@@ -1,16 +1,13 @@
 {
-  "version": 2,
-  "builds": [
-    {
-      "src": "api/index.py",
+    "builds": [{
+      "src": "phi_mart/wsgi.py",
       "use": "@vercel/python",
-      "config": { "runtime": "python3.11" }
-    }
-  ],
-  "routes": [
-    {
-      "src": "/(.*)",
-      "dest": "api/index.py"
-    }
-  ]
+      "config": { "maxLambdaSize": "15mb", "runtime": "python3.11.3" }
+    }],
+    "routes": [
+      {
+        "src": "/(.*)",
+        "dest": "phi_mart/wsgi.py"
+      }
+    ]
 }
