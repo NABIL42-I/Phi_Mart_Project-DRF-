@@ -48,7 +48,7 @@ class Orderviewset(ModelViewSet):
     # queryset = Order.objects.all()
     # serializer_class = OrderSerializer
     http_method_names=['get','post','delete','patch','head','optons']
-    permission_classes =[IsAuthenticated]
+    # permission_classes =[IsAuthenticated]
 
     @action(detail = True,methods=['post'])
     def cancel(self,request,pk=None):
