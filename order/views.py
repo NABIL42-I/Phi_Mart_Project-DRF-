@@ -157,7 +157,7 @@ def payment_success(request):
     order = Order.objects.get(id=order_id)
     order.status = "Ready To Ship"
     order.save()
-    return HttpResponseRedirect(f"{main_settings.FRONTEND_URL}/dashboard/orders/")
+    return HttpResponseRedirect(f"{main_settings.FRONTEND_URL}/dashboard/payment/success/")
 
 @api_view(['POST'])
 def payment_cancel(request):
