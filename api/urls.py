@@ -2,7 +2,7 @@ from django.urls import path,include
 # from rest_framework.routers import SimpleRouter,DefaultRouter
 from product.views import productViewSet,CategoryViewSet,ReviewViewset,ProductImageViewSet
 from rest_framework_nested import routers
-from order.views import CartViewSet,CartItemViewSet,Orderviewset
+from order.views import CartViewSet,CartItemViewSet,Orderviewset,initiate_payment
 # Official DRF docs on this option: http://www.django-rest-framework.org/api-guide/routers/
 
 # router = SimpleRouter()
@@ -30,6 +30,7 @@ urlpatterns=[
     path('', include(cart_router.urls)),
     path('auth/', include('djoser.urls')),
     path('auth/', include('djoser.urls.jwt')),
+    path("payment/initiate/",initiate_payment,name="initiate_payment"),
 
     #aro urls thake segula ekhane dewa jabe 
     # path(r'', include(router.urls)),#Raw string
