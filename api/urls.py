@@ -2,7 +2,7 @@ from django.urls import path,include
 # from rest_framework.routers import SimpleRouter,DefaultRouter
 from product.views import productViewSet,CategoryViewSet,ReviewViewset,ProductImageViewSet
 from rest_framework_nested import routers
-from order.views import CartViewSet,CartItemViewSet,Orderviewset,initiate_payment,payment_success,payment_fail,payment_cancel
+from order.views import CartViewSet,CartItemViewSet,Orderviewset,initiate_payment,payment_success,payment_fail,payment_cancel,HasOrderedProduct
 # Official DRF docs on this option: http://www.django-rest-framework.org/api-guide/routers/
 
 # router = SimpleRouter()
@@ -34,6 +34,7 @@ urlpatterns=[
     path("payment/success/", payment_success, name="payment-success"),
     path("payment/fail/", payment_fail, name="payment-fail"),
     path("payment/cancel/", payment_cancel, name="payment-cancel"),
+    path('orders/has-ordered/<int:product_id>/',HasOrderedProduct.as_view()),
 
     #aro urls thake segula ekhane dewa jabe 
     # path(r'', include(router.urls)),#Raw string

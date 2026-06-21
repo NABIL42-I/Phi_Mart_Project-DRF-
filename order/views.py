@@ -15,6 +15,9 @@ from sslcommerz_lib import SSLCOMMERZ
 from django.conf import settings as main_settings
 from django.shortcuts import redirect
 from django.http import HttpResponseRedirect
+from urllib.parse import quote  # Import this to safely encode URL spaces/symbols
+from rest_framework.views import APIView
+
 
 
 # Create your views here.
@@ -150,14 +153,38 @@ def initiate_payment(request):
         return Response({"payment_url":response['GatewayPageURL']})
     return Response({"error":"Payment initiation failed"},status=status.HTTP_400_BAD_REQUEST)
     
+# @api_view(['POST'])
+# def payment_success(request):
+#     print("Inside success")
+#     order_id = request.data.get("tran_id").split('_')[1]
+#     order = Order.objects.get(id=order_id)
+#     order.status = "Ready To Ship"
+#     order.save()
+#     return HttpResponseRedirect(f"{main_settings.FRONTEND_URL}/dashboard/payment/success/")
+
+
 @api_view(['POST'])
 def payment_success(request):
     print("Inside success")
     order_id = request.data.get("tran_id").split('_')[1]
+    total_amount = request.data.get("amount")
     order = Order.objects.get(id=order_id)
     order.status = "Ready To Ship"
     order.save()
-    return HttpResponseRedirect(f"{main_settings.FRONTEND_URL}/dashboard/payment/success/")
+    # Safely extract and encode user parameters
+    full_name = f"{order.user.first_name} {order.user.last_name}"
+    address = order.user.address if order.user.address else "Not Provided"
+    encoded_name = quote(full_name)
+    encoded_address = quote(address)
+    # Append all parameters cleanly into the URL string
+    redirect_url = (
+        f"{main_settings.FRONTEND_URL}/dashboard/payment/success/"
+        f"?orderId={order_id}"
+        f"&amount={total_amount}"
+        f"&name={encoded_name}"
+        f"&address={encoded_address}"
+    )
+    return HttpResponseRedirect(redirect_url)
 
 @api_view(['POST'])
 def payment_cancel(request):
@@ -168,3 +195,14 @@ def payment_cancel(request):
 def payment_fail(request):
     print("Inside fail")
     return HttpResponseRedirect(f"{main_settings.FRONTEND_URL}/dashboard/orders/")
+
+
+
+class HasOrderedProduct(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, product_id):
+        user = request.user
+        has_ordered = OrderItem.objects.filter(
+            order__user=user, product_id=product_id).exists()
+        return Response({"hasOrdered": has_ordered})
