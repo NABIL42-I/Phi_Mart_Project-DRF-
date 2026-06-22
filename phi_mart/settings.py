@@ -96,7 +96,8 @@ TEMPLATES = [
 
 WSGI_APP = 'phi_mart.wsgi.application'
 CORS_ALLOWED_ORIGINS = [
-  'http://localhost:5173'
+  'http://localhost:5173',
+  'https://phi-mart-client1.vercel.app',
 ]
 INTERNAL_IPS = [
     # ...
