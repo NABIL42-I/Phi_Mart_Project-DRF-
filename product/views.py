@@ -73,17 +73,32 @@ class ProductImageViewSet(ModelViewSet):
 
 
 # CategoryList + CategoryDEtails
-class CategoryViewSet(ModelViewSet):
-    permission_classes=[IsAdminOrReadOnly]
-    queryset = Category.objects.annotate(
-        product_count=Count('products')).all()
-    serializer_class = CategorySerializer
+# class CategoryViewSet(ModelViewSet):
+#     permission_classes=[IsAdminOrReadOnly]
+#     queryset = Category.objects.annotate(
+#         product_count=Count('products')).all()
+#     serializer_class = CategorySerializer
 
+class CategoryViewSet(ModelViewSet):
+    """
+    list:
+    Retrieve a list of categories along with their product counts and nested product data.
+    
+    retrieve:
+    Get details of a single category, including all related items.
+    """
+    permission_classes = [IsAdminOrReadOnly]
+    serializer_class = CategorySerializer
+    queryset = Category.objects.annotate(
+        product_count=Count('products')
+    ).prefetch_related(
+        'products__images'  # <-- This pulls all product images in 1 query, stopping the 49 extra calls
+    ).all()
 
 #Generic Api View
-class CategoryDetails(RetrieveUpdateDestroyAPIView):
-    queryset = Category.objects.annotate(product_count=Count('products')).all()
-    serializer_class  = CategorySerializer
+# class CategoryDetails(RetrieveUpdateDestroyAPIView):
+#     queryset = Category.objects.annotate(product_count=Count('products')).all()
+#     serializer_class  = CategorySerializer
 
 
 

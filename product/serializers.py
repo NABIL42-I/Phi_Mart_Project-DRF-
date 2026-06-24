@@ -6,12 +6,7 @@ from django.contrib.auth import get_user_model
 
 
 
-class CategorySerializer(serializers.ModelSerializer):
-    product_count = serializers.IntegerField(read_only = True,help_text="Return the number product in this category")
 
-    class Meta:
-        model = Category
-        fields = ['id', 'name', 'description', 'product_count']
 
     # def get_product_count(self, obj):
     #     return obj.products.count()
@@ -44,6 +39,13 @@ class ProductSerializer(serializers.ModelSerializer):
         if price < 0:
             raise serializers.ValidationError('Price could not be negative')
         return price
+    
+class CategorySerializer(serializers.ModelSerializer):
+    product_count = serializers.IntegerField(read_only = True,help_text="Return the number product in this category")
+    products = ProductSerializer(many=True, read_only=True)
+    class Meta:
+        model = Category
+        fields = ['id', 'name', 'description', 'product_count','products']
 
 
 
